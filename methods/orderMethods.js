@@ -20,7 +20,7 @@ module.exports.buy = function(req, res){
 }
 		
 /**
-* siparisTutari : siparislerin toplam tutarini verir
+* cost : siparislerin toplam tutarini verir
 * @param req.headers.oturumkodu - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
 */
 module.exports.cost = function(req, res){
@@ -74,7 +74,7 @@ module.exports.numberOfProducts = function(req, res){
 }
 		
 /**
-* products : siparislere eklenen urunleri listeler
+* products : siparisler sepetindeki urunleri listeler
 * @param req.headers.sessionCode - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
 */
 module.exports.products = function(req, res){
@@ -83,11 +83,26 @@ module.exports.products = function(req, res){
 			if(err){
 				console.error('There was an error connecting db!', err);
 			}else{
-				collection("users").find({'sessionCode':req.headers.sessioncode}).toArray(function(err,user){
+				db.collection("users").find({'sessionCode':req.headers.sessioncode}).toArray(function(err,user){
 					if(user.length==1){
-						collection("orders").find({"userNo":user[0]._id}).toArray(function(err,products){
-							res.write("{'result':true,'basketProducts':"+JSON.stringify(products)+"}");
-							res.end();
+						var userid=JSON.stringify(user[0]._id).replace('"','').replace('"','');
+						db.collection("orders").find({"userNo":userid}).toArray(function(err,orderProducts){
+							db.collection("products").find().toArray(function(err,allProducts){
+								var basketProducts="";
+								for(var i in orderProducts){
+									var productName="";
+									for(var t in allProducts){
+										if(orderProducts[i].productNo==allProducts[t]._id){
+											productName=allProducts[t].name;
+											break;
+										}
+									}
+									orderProducts[i].name=productName;
+								}
+								
+								res.write("{'result':true,'basketProducts':"+JSON.stringify(orderProducts)+"}");
+								res.end();
+							});
 						});
 					}else{
 						res.write("{'result':false,'message':'Giriş yapin'}");
@@ -100,7 +115,7 @@ module.exports.products = function(req, res){
 }
 		
 /**
-* urunAdediGuncelle : istenilen urunun sepetteki durumunu gunceller
+* updateProducts : istenilen urunun sepetteki durumunu gunceller
 * @description <Uyenin ilgili urune ait herhangi bir siparisi yoksa yeni bir siparis yaratir,
 * zaten siparis varsa urunun siparisteki sayisini gunceller ve urunler collectioninda
 * urunun sayisini gunceller. Siparisteki urun adedi eksiliyorsa depodaki urun sayisi onemsizdir ve arttirilir,
@@ -113,58 +128,73 @@ module.exports.products = function(req, res){
 */
 module.exports.updateProducts = function(req, res){
 	if(req.headers.appsecret==constants.appSecret){
-		users.find({"sessionCode":req.headers.sessioncode}).toArray(function(err,user){
-			if(user.length==1){
-				var idsi=new ObjectID(req.body.productNo);
-				products.find({"_id":idsi}).toArray(function(err,product){
-					collection("orders").find({"userNo":user[0]._id,"productNo":product[0]._id}).toArray(function(err,order){
-						if(order.length==0){
-							if(req.body.number>0){
-								if(product[0].number>=req.body.number){
-									orders.insert({"userNo":user[0]._id,"productNo":product[0]._id,"price":(req.body.number*product[0].price),"number":req.body.number},function(err,result){});
-									products.updateOne({"_id":idsi},{$set:{"number":(product[0].adet-req.body.number)}},function(err,result){});
-									res.write("Siparisiniz olusturuldu");
-									res.end();
-								}else{
-									res.write("{'result':false,'message':'Depomuzda yeterli urun olmadigindan sayiyi arttiramiyoruz'}");
-									res.end();
-								}
-							}else{
-								res.write("'result':false,'message':'Herhangi bir siparis vermediniz'");
-								res.end();
-							}
-						}else{
-							if(req.body.number>order[0].number){
-								if(product[0].number>=adet-req.body.adet){
-									siparisler.updateOne({"siparisVeren":uye[0]._id,"urunNo":urun[0]._id},{$set:{"adet":req.body.adet}},function(err,result){});
-									urunler.updateOne({"_id":urunidsi},{$set:{"adet":(urun[0].adet-(adet-siparis[0].adet))}},function(err,result){});
-									res.write("Urun sayisi arttirildi");
-									res.end();
-								}else{
-									res.write("{'result':false,'message':'Depomuzda yeterli urun olmadigindan sayiyi arttiramiyoruz'}");
-									res.end();
-								}
-							}else if(adet<siparis[0].adet){
-								if(adet>0){
-									siparisler.updateOne({"siparisVeren":uye[0]._id,"urunNo":urun[0]._id},{$set:{"adet":req.body.adet}},function(err,result){});
-									urunler.updateOne({"_id":urunidsi},{$set:{"adet":(urun[0].adet+(siparis[0].adet-adet))}},function(err,result){});
-									res.write("Urun sayisi eksiltildi");
-									res.end();
-								}else{
-									siparisler.deleteOne({"siparisVeren":uye[0]._id,"urunNo":urun[0]._id},function(err,result){});
-									res.write("Urun siparisi kaldirildi");
-									res.end();
-								}
-							}else{
-								res.write("{'result':false,'message':'Girdiginiz urun sayisi ayni'}");
-								res.end();
-							}
-						}
-					});
-				});
+		dbCon.MongoClient.connect(dbCon.dbUrl, function (err, db) {
+			if(err){
+				console.error('There was an error connecting db!', err);
 			}else{
-				res.write("{'result':false,'message':'Giris yapin'}");
-				res.end();
+				db.collection("users").find({"sessionCode":req.headers.sessioncode}).toArray(function(err,user){
+					if(user.length==1){
+						var idsi=dbCon.ObjectID(req.body.productNo);
+						var products=db.collection("products");
+						var orders=db.collection("orders");
+						products.find({"_id":idsi}).toArray(function(err,product){
+							orders.find({"userNo":user[0]._id,"productNo":product[0]._id}).toArray(function(err,order){
+								if(order.length==0){
+									if(req.body.number>0){
+										if(product[0].number>=req.body.number){
+											orders.insert({"userNo":user[0]._id,"productNo":product[0]._id,"price":(req.body.number*product[0].price),"number":req.body.number},function(err,result){
+												products.updateOne({"_id":idsi},{$set:{"number":(product[0].number-req.body.number)}},function(err,result){
+													res.write("{'result':true,'message':'Ürün sepete eklendi'}");
+													res.end();
+												});
+											});
+										}else{
+											res.write("{'result':false,'message':'Depomuzda yeterli urun olmadigindan sayiyi arttiramiyoruz'}");
+											res.end();
+										}
+									}else{
+										res.write("'result':false,'message':'Değişiklik yok'");
+										res.end();
+									}
+								}else{
+									if(req.body.number>order[0].number){
+										if(product[0].number>=order[0].number-req.body.number){
+											orders.updateOne({"userNo":user[0]._id,"productNo":product[0]._id},{$set:{"number":req.body.number}},function(err,result){
+												products.updateOne({"_id":idsi},{$set:{"number":(product[0].number-(req.body.number-order[0].number))}},function(err,result){
+													res.write("{'result':false,'message':'Ürünler sepete eklendi'}");
+													res.end();
+												});
+											});
+										}else{
+											res.write("{'result':false,'message':'Depomuzda yeterli urun olmadigindan sayiyi arttiramiyoruz'}");
+											res.end();
+										}
+									}else if(req.body.number<order[0].number){
+										if(req.body.number>0){
+											orders.updateOne({"userNo":user[0]._id,"productNo":product[0]._id},{$set:{"number":req.body.number}},function(err,result){
+												products.updateOne({"_id":idsi},{$set:{"number":(product[0].number+(order[0].number-req.body.number))}},function(err,result){
+													res.write("{'result':true,'message':'Ürün sayısı eksiltildi'}");
+													res.end();
+												});
+											});
+										}else{
+											orders.deleteOne({"userNo":user[0]._id,"productNo":product[0]._id},function(err,result){
+												res.write("{'result':true,'message':'Ürün sepetten kaldırıldı'}");
+												res.end();
+											});
+										}
+									}else{
+										res.write("{'result':false,'message':'Değişiklik yok'}");
+										res.end();
+									}
+								}
+							});
+						});
+					}else{
+						res.write("{'result':false,'message':'Giris yapin'}");
+						res.end();
+					}
+				});
 			}
 		});
 	}

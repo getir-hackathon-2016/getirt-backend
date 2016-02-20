@@ -14,20 +14,15 @@ var constants = require("../constants");
 *
 */
 module.exports.login = function(req, res){
-	console.log("appsecret oncesi");
 	if(req.headers.appsecret==constants.appSecret){
-		console.log("appsecret sonrasi");
 		dbCon.MongoClient.connect(dbCon.dbUrl, function (err, db) {
 			if(err){
 				console.error('There was an error connecting db!', err);
 			}else{
-				console.log("baglandi!");
 				var users=db.collection("users");
 				users.find({"email":req.body.email,"mpassword":tools.generateMpassword(req.body.password)}).count(function(err,count){
-					console.log("email:"+req.body.email+" password:"+req.body.password+" mpassword"+ tools.generateMpassword(req.body.password));
 					if(!err){
 						if(count==1){
-							console.log("üye bulundu!");
 							var sessionCode=tools.createSessionCode(req.body.email);
 							users.updateOne(
 							  { "email" : req.body.email },
@@ -43,7 +38,6 @@ module.exports.login = function(req, res){
 								}
 						   });
 						}else{
-							console.log("üye yok!");
 							res.write("{'result':false,'message':'Böyle bir üyelik bulunamadı'}");
 							res.end();
 
@@ -72,14 +66,11 @@ module.exports.login = function(req, res){
 *
 */
 module.exports.register = function(req, res){
-	console.log(req.headers.appsecret +"=="+constants.appSecret);
 	if(req.headers.appsecret==constants.appSecret){
-		console.log("appSecret gecildi");
 		dbCon.MongoClient.connect(dbCon.dbUrl, function (err, db) {
 			if(err){
 				console.error('There was an error connecting db!', err);
 			}else{
-				console.log("db baglandi!");
 				var users=db.collection("users");
 				var permissionToRegister=1;
 				var errorMessage="";
@@ -100,15 +91,11 @@ module.exports.register = function(req, res){
 						errorMessage="Bu email adresi kullanılmaktadır";
 						permissionToRegister=0;
 					}
-					console.log("permission == 1 kontrolu oncesi");
 					if(permissionToRegister==1){
-						console.log("permission == 1 kontrolu sonrasi");
-						console.log("uye olunuyor");
 						var mpassword=tools.generateMpassword(req.body.password);
 						var now=tools.getSeconds();
 						users.insert({"name":req.body.name,"email":req.body.email,"mpassword":mpassword,"now":now,"sessionCode":"","address":"","addressX":"","addressY":"","creditCart":""},function(err,result){
 							if(!err){
-								console.log("basariyla uye olundu");
 								res.write("{'result':true,'message':'Başarıyla üye olundu'}");
 								res.end();
 							}else{
@@ -117,7 +104,6 @@ module.exports.register = function(req, res){
 							}
 						});
 					}else{
-						console.log(errorMessage);
 						res.write("{'result':false,'message':'"+errorMessage+"'}");
 						res.end();
 					}

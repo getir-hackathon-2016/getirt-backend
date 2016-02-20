@@ -6,3 +6,4 @@ ObjectID = require('mongodb').ObjectID;
 module.exports.MongoClient=MongoClient;
 module.exports.dbUrl=dbUrl;
 module.exports.mongodb=mongodb;
+module.exports.ObjectID=ObjectID;

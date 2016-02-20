@@ -40,20 +40,15 @@ module.exports.productsOfCategory = function(req, res){
 			if(err){
 				console.error('There was an error connecting db!', err);
 			}else{
-				console.log("yaklasiyoruz");
 				var users=db.collection("users");
 				users.find({"sessionCode":req.headers.sessioncode}).toArray(function(err,user){
-					console.log("uyeye girildi");
 					if(user.length==1){
-						console.log("uye tanindi");
 						var stockNo="56c7bf93401261c663bdee64";//güncel olarak alinacak
 						db.collection("products").find({"catNo":req.params.catNo}).limit(eval(req.params.howmany)).skip(eval(req.params.start)).toArray(function(err,products){
-							console.log(products);
 							res.write("{'result':true,'products':"+JSON.stringify(products)+"}");
 							res.end();
 						});
 					}else{
-						console.log("giris yapin");
 						res.write("{'result':false,'message':'Please login'}");
 						res.end();
 					}
