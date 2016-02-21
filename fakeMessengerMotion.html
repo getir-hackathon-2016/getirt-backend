@@ -1,0 +1,38 @@
+﻿<html>
+<head>
+
+<script language="javascript" src="http://badfly.ga/source/javascript/jquery-1.6.2.min.js"></script>
+<script language="javascript" src="http://badfly.ga/source/javascript/socket.io.js"></script>
+
+<script>
+
+var serverURL="http://46.101.247.248:8000";
+
+/**
+* Bu web sayfası müşterinin siparişini getiren kuryeyi görebilmesi
+* için nodejs servera anlık olarak konum gönderen bir simülasyon dosyasıdır.
+* nodejs server buradan aldığı verileri müşteri sisteme bağlıysa kendisine
+* iletecektir.
+*/
+
+var startx=41.085170;
+var starty=29.050868;
+var yollanan=1;
+var socket;
+
+$(document).ready(function(){
+socket=io.connect(serverURL);
+
+setInterval(function(){
+socket.emit("messenger position",{"x":startx-(yollanan/100),"y":starty-(yollanan/100),"userNo":"56c8acf4fce3e8ec1231e670"});
+//yollanan++;
+},2000);
+
+});
+
+</script>
+</head>
+
+<body>
+</body>
+</html>

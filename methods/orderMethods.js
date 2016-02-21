@@ -4,7 +4,7 @@ var constants = require("../constants");
 		
 /**
 * buy : sepetteki urunlerin odenmesi ve teslimata cikarilmasini saglar
-* @param req.headers.oturumkodu - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
+* @param req.headers.sessioncode - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
 */
 module.exports.buy = function(req, res){
 	if(req.headers.appsecret==constants.appSecret){
@@ -12,15 +12,29 @@ module.exports.buy = function(req, res){
 			if(err){
 				console.error('There was an error connecting db!', err);
 			}else{
-				db.collection("users").find({'sessionCode':req.headers.sessioconcode}).toArray(function(err,user){
+				db.collection("users").find({"sessionCode":req.headers.sessioncode}).toArray(function(err,user){
 					if(user.length==1){
 						db.collection("orders").find({"userNo":user[0]._id}).toArray(function(err,orders){
 							var totalPrice=0;
-							var allProducts={};
-							for(var i in order){
+							for(var i in orders){
 								totalPrice+=orders[i].price;
 							}
-							db.collection("messengerTasks").insert({"products":allProducts,"price":totalPrice,"userNo":user[0]._id,"status":"0","address":req.body.address,"addressX":req.body.addressX,"addressY":req.body.addressY});
+							
+							/**
+							* UYGUN KURYENİN ATANMASI
+							* Normalde burada ürünlerin ait olduğu depoya ait
+							* dağıtıma hazır olan kuryenin seçtirilmesini sağlayacaktık
+							* fakat vakit kaybetmek ve kurye insertleriyle uğraşmak
+							* istemediğimiz için messengers tablosundan bir kuryenin
+							* idsini döneceğiz
+							*/
+							var messengerNo="56c94c8f1fb9b59f30d0420c";
+							db.collection("messengerTasks").insert({"products":"bütün ürünler objesi","price":totalPrice,"userNo":JSON.stringify(user[0]._id),"messengerNo":messengerNo,"status":"0","address":req.body.address,"addressX":req.body.addressX,"addressY":req.body.addressY},function(err,resa){
+								db.collection("orders").remove({"userNo":JSON.stringify(user[0]._id)},function(err,result){
+									res.write("{'result':true,'message':'Sipariş başarıyla alındı.'}");
+									res.end();
+								});
+							});
 						});
 					}else{
 						res.write("{'result':false,'message':'Giris yapin'}");
