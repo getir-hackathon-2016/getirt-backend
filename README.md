@@ -1,24 +1,24 @@
-/server.js: serverın sürekli çalışan ana aktivitesi
+ï»¿/server.js: serverÄ±n sÃ¼rekli Ã§alÄ±ÅŸan ana aktivitesi
 
-/constants.js: Bazı yerlerde kullanılan constantlar
+/constants.js: BazÄ± yerlerde kullanÄ±lan constantlar
 
-/dbConnection.js: Veritabanı unsurlarının export edildiği dosya
+/dbConnection.js: VeritabanÄ± unsurlarÄ±nÄ±n export edildiÄŸi dosya
 
 /fakeMessengerMotion.html:
-Normalde kuryenin cep telefonundan serverımıza soketler aracılığıyla gelen konum verilerini sipariş bekleyen müşteriye yine serverımız tarafından göndermekteyiz ve google maps üzerinde konumu sürekli güncellemekteyiz. Pratikte hareketli bir kurye kullanamayacağımız için bu html dosyasından serverımıza 2 saniyede bir, daha önceden belirlenen meridyen koordinatlarını alarak tıpkı bir kuryeyi simüle ediyoruz.
+Normalde kuryenin cep telefonundan serverÄ±mÄ±za soketler aracÄ±lÄ±ÄŸÄ±yla gelen konum verilerini sipariÅŸ bekleyen mÃ¼ÅŸteriye yine serverÄ±mÄ±z tarafÄ±ndan gÃ¶ndermekteyiz ve google maps Ã¼zerinde konumu sÃ¼rekli gÃ¼ncellemekteyiz. Pratikte hareketli bir kurye kullanamayacaÄŸÄ±mÄ±z iÃ§in bu html dosyasÄ±ndan serverÄ±mÄ±za 2 saniyede bir, daha Ã¶nceden belirlenen meridyen koordinatlarÄ±nÄ± alarak tÄ±pkÄ± bir kuryeyi simÃ¼le ediyoruz.
 
-Android uygulamamızda sipariş tamamlandıktan sonra açılan harita kapatılmadan bu html dosyası çalıştırıldığında, açılan o haritada kuryenin hareketinin simüle edildiğini görebilirsiniz.
+Android uygulamamÄ±zda sipariÅŸ tamamlandÄ±ktan sonra aÃ§Ä±lan harita kapatÄ±lmadan bu html dosyasÄ± Ã§alÄ±ÅŸtÄ±rÄ±ldÄ±ÄŸÄ±nda, aÃ§Ä±lan o haritada kuryenin hareketinin simÃ¼le edildiÄŸini gÃ¶rebilirsiniz.
 
 /methods/
-|_ tools.js: Kısa metotların export edildiği dosya.
-|_ userMethods.js: Kaydolma ve giriş metotları
-|_ orderMethods.js: sipariş için ürün ekleme, çıkarma, sepetteki
-|  			    ürünleri görme, siparişi tamamlama metotları
+|_ tools.js: KÄ±sa metotlarÄ±n export edildiÄŸi dosya.
+|_ userMethods.js: Kaydolma ve giriÅŸ metotlarÄ±
+|_ orderMethods.js: sipariÅŸ iÃ§in Ã¼rÃ¼n ekleme, Ã§Ä±karma, sepetteki
+|  			    Ã¼rÃ¼nleri gÃ¶rme, sipariÅŸi tamamlama metotlarÄ±
 |
 |_ listingMethods.js: kategorileri ve herhangi bir kategorinin
-|    				 ürünlerini listeleyen metotlar
+|    				 Ã¼rÃ¼nlerini listeleyen metotlar
 |
-|_ messengerMethods.js: Tamamlanamadı
+|_ messengerMethods.js: TamamlanamadÄ±
 
 
 
@@ -29,77 +29,77 @@ Android uygulamamızda sipariş tamamlandıktan sonra açılan harita kapatılmadan bu
 | _id name email mpassword sessionCode address addressX
 | addressY | creditCard now
 |
-| Açıklama: kullanıcıların bilgilerinin tutulduğu tablo
-| name, email, address: kullanıcıdan alınan temel bilgiler;
-| mpassword: parolanın geri dönüştürelemez şekilde özelleşmiş
+| AÃ§Ä±klama: kullanÄ±cÄ±larÄ±n bilgilerinin tutulduÄŸu tablo
+| name, email, address: kullanÄ±cÄ±dan alÄ±nan temel bilgiler;
+| mpassword: parolanÄ±n geri dÃ¶nÃ¼ÅŸtÃ¼relemez ÅŸekilde Ã¶zelleÅŸmiÅŸ
 | halidir;
-| sessionCode: üye girişi sırasında üyeye ve zamana özel
-| üretilmiş benzersiz koddur;
-| addressX ve addressY sipariş verilmesi durumunda kişinin
+| sessionCode: Ã¼ye giriÅŸi sÄ±rasÄ±nda Ã¼yeye ve zamana Ã¶zel
+| Ã¼retilmiÅŸ benzersiz koddur;
+| addressX ve addressY sipariÅŸ verilmesi durumunda kiÅŸinin
 | geometrik konumunudur;
-| now: üyenin sisteme kaydolduğu zamanın saniye cinsinden
-| değeridir.
+| now: Ã¼yenin sisteme kaydolduÄŸu zamanÄ±n saniye cinsinden
+| deÄŸeridir.
 | --------------------------------------------------------
 | messengers
 | _id name locationX locationY telephone mpassword sessionCode | nearStock stockNo
 |
-| Açıklama: kurye bilgilerinin tutulduğu tablo
+| AÃ§Ä±klama: kurye bilgilerinin tutulduÄŸu tablo
 | name, telephone: kuryenin temel bilgileri;
-| locationX ve locationY: kuryenin soketlerle anlık olarak 
-| alınan konumu;
-| nearStock: kuryenin dağıtım yaptığı depoda olup olmadığı
-| bilgisidir, diğer bir deyişle
-| yeni dağıtım için uygun olup olmadığıdır.
+| locationX ve locationY: kuryenin soketlerle anlÄ±k olarak 
+| alÄ±nan konumu;
+| nearStock: kuryenin daÄŸÄ±tÄ±m yaptÄ±ÄŸÄ± depoda olup olmadÄ±ÄŸÄ±
+| bilgisidir, diÄŸer bir deyiÅŸle
+| yeni daÄŸÄ±tÄ±m iÃ§in uygun olup olmadÄ±ÄŸÄ±dÄ±r.
 ----------------------------------------------------------
 | products
 | _id name number price stockNo catNo
 |
-| Açıklama: ürünlerin bilgilerinin tutulduğu tablo
-| name, price: ürünün temel bilgileri;
-| number: ürünün ilgili depoda kaç tane bulunduğunun değeri;
-| stockNo: ürünün malları aldığı deponun nosu;
-| catNo: ürünün kategorisinin numarasıdır.
+| AÃ§Ä±klama: Ã¼rÃ¼nlerin bilgilerinin tutulduÄŸu tablo
+| name, price: Ã¼rÃ¼nÃ¼n temel bilgileri;
+| number: Ã¼rÃ¼nÃ¼n ilgili depoda kaÃ§ tane bulunduÄŸunun deÄŸeri;
+| stockNo: Ã¼rÃ¼nÃ¼n mallarÄ± aldÄ±ÄŸÄ± deponun nosu;
+| catNo: Ã¼rÃ¼nÃ¼n kategorisinin numarasÄ±dÄ±r.
 | --------------------------------------------------------
 | orders
 | _id userNo productNo number price
 |
-| Açıklama: üyelerin sipariş vermek üzereykenki ürünlerin
+| AÃ§Ä±klama: Ã¼yelerin sipariÅŸ vermek Ã¼zereykenki Ã¼rÃ¼nlerin
 | tablosu
-| userNo: ürün siparişinin hangi üyeye ait olduğu;
-| productNo: ilgili ürünün products tablosundaki id değeri;
-| number: ilgili üründen kaç tane istendiğinin değeri;
-| price: ürün fiyatı * ürün sayısı olarak elde edilen tutar,
-| kampanyalar vs. ile price başka sonuçlar verebilir
+| userNo: Ã¼rÃ¼n sipariÅŸinin hangi Ã¼yeye ait olduÄŸu;
+| productNo: ilgili Ã¼rÃ¼nÃ¼n products tablosundaki id deÄŸeri;
+| number: ilgili Ã¼rÃ¼nden kaÃ§ tane istendiÄŸinin deÄŸeri;
+| price: Ã¼rÃ¼n fiyatÄ± * Ã¼rÃ¼n sayÄ±sÄ± olarak elde edilen tutar,
+| kampanyalar vs. ile price baÅŸka sonuÃ§lar verebilir
 | --------------------------------------------------------
 | messengerTasks
 | _id userNo products price status address addressX addressY
 | messengerNo status0time status1time status2time
 |
-| Açıklama: Ücreti ödenmiş ve dağıtımı bekleyen siparişlerin
+| AÃ§Ä±klama: Ãœcreti Ã¶denmiÅŸ ve daÄŸÄ±tÄ±mÄ± bekleyen sipariÅŸlerin
 | tablosu;
-| userNo: ödemenin sahibi
-| products: orders tablosundaki tüm ürünlerin tek bir yerde 
-| toplanmış halidir;
-| price: siparişin tutarıdır;
-| status: 0-> depoda beklemede 1-> dağıtımda 2->teslim edildi | 3->iptal/özel durum;
-| address: teslimat yapılacak adresin bilinen ismi;
-| addressX ve addressY: teslimat yapılacak yerin geometrik 
-| konumları;
+| userNo: Ã¶demenin sahibi
+| products: orders tablosundaki tÃ¼m Ã¼rÃ¼nlerin tek bir yerde 
+| toplanmÄ±ÅŸ halidir;
+| price: sipariÅŸin tutarÄ±dÄ±r;
+| status: 0-> depoda beklemede 1-> daÄŸÄ±tÄ±mda 2->teslim edildi | 3->iptal/Ã¶zel durum;
+| address: teslimat yapÄ±lacak adresin bilinen ismi;
+| addressX ve addressY: teslimat yapÄ±lacak yerin geometrik 
+| konumlarÄ±;
 | messengerNo: status 1 veya 2 ise ilgili kuryenin
 | tablosundaki | idsi;
-| status0time, status1time ve status2time: siparişin ödemeden
-| itibaren bulunduğu durumların saniye cinsinden tarihi
+| status0time, status1time ve status2time: sipariÅŸin Ã¶demeden
+| itibaren bulunduÄŸu durumlarÄ±n saniye cinsinden tarihi
 | ----------------------------------------------------------
 | stocks
 | _id name locationX locationY
 |
-| Açıklama: lokasyonlara göre dağıtılmış depo numaraları
-| name: Getir elemanlarının depoyu andığı isim;
+| AÃ§Ä±klama: lokasyonlara gÃ¶re daÄŸÄ±tÄ±lmÄ±ÅŸ depo numaralarÄ±
+| name: Getir elemanlarÄ±nÄ±n depoyu andÄ±ÄŸÄ± isim;
 | locationX, locationY: deponun geometrik konumu
 ----------------------------------------------------------
 | categories
 | _id name
 |
-| Açıklama: Ürünlerin sınıflandırılacağı tablo
-| name: Kategori adı
+| AÃ§Ä±klama: ÃœrÃ¼nlerin sÄ±nÄ±flandÄ±rÄ±lacaÄŸÄ± tablo
+| name: Kategori adÄ±
 ----------------------------------------------------------
