@@ -8,12 +8,25 @@ var constants = require("../constants");
 */
 module.exports.buy = function(req, res){
 	if(req.headers.appsecret==constants.appSecret){
-		uyeler.find({'oturumKodu':req.headers.oturumkodu}).toArray(function(err,uye){
-			if(uye.length==1){
-
+		dbCon.MongoClient.connect(dbCon.dbUrl, function (err, db) {
+			if(err){
+				console.error('There was an error connecting db!', err);
 			}else{
-				res.write("{'result':false,'message':'Giris yapin'}");
-				res.end();
+				db.collection("users").find({'sessionCode':req.headers.sessioconcode}).toArray(function(err,user){
+					if(user.length==1){
+						db.collection("orders").find({"userNo":user[0]._id}).toArray(function(err,orders){
+							var totalPrice=0;
+							var allProducts={};
+							for(var i in order){
+								totalPrice+=orders[i].price;
+							}
+							db.collection("messengerTasks").insert({"products":allProducts,"price":totalPrice,"userNo":user[0]._id,"status":"0","address":req.body.address,"addressX":req.body.addressX,"addressY":req.body.addressY});
+						});
+					}else{
+						res.write("{'result':false,'message':'Giris yapin'}");
+						res.end();
+					}
+				});
 			}
 		});
 	}
@@ -75,7 +88,7 @@ module.exports.numberOfProducts = function(req, res){
 		
 /**
 * products : siparisler sepetindeki urunleri listeler
-* @param req.headers.sessionCode - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
+* @param req.headers.sessioncode - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
 */
 module.exports.products = function(req, res){
 	if(req.headers.appsecret==constants.appSecret){
@@ -85,21 +98,17 @@ module.exports.products = function(req, res){
 			}else{
 				db.collection("users").find({'sessionCode':req.headers.sessioncode}).toArray(function(err,user){
 					if(user.length==1){
-						var userid=JSON.stringify(user[0]._id).replace('"','').replace('"','');
+						var userid=JSON.stringify(user[0]._id);
 						db.collection("orders").find({"userNo":userid}).toArray(function(err,orderProducts){
 							db.collection("products").find().toArray(function(err,allProducts){
-								var basketProducts="";
 								for(var i in orderProducts){
-									var productName="";
 									for(var t in allProducts){
-										if(orderProducts[i].productNo==allProducts[t]._id){
-											productName=allProducts[t].name;
+										if(JSON.stringify(orderProducts[i].productNo)==JSON.stringify(allProducts[t]._id)){
+											orderProducts[i].name=allProducts[t].name;
 											break;
 										}
 									}
-									orderProducts[i].name=productName;
 								}
-								
 								res.write("{'result':true,'basketProducts':"+JSON.stringify(orderProducts)+"}");
 								res.end();
 							});
@@ -122,10 +131,11 @@ module.exports.products = function(req, res){
 * urun sayisi artiyorsa depoda yeterli urun var mi kontrol edilir>
 * @param {string} req.body.productNo - urunun dbdeki idsi
 * @param {number} idsi - mongodbde _id secilebilmesi icin urunun string tipinden idsinden uretilmis mongodb objesi
-* @param {number} req.body.number - urunun guncellenmek istenilen adedi
+* @param {string} req.body.doo - urun adedinin guncellenmesi, azaltilmasi veya arttirilmasinin soylenmesi
+* @param {number} req.body.number - urunun adedinin guncellenmek, arttirilmak veya azaltilmak istenen degeri
 * @param req.headers.sessioncode - giris sirasinda uyeye ozel uretilmis zamana bagli essiz kod
 *
-*/
+*/ 
 module.exports.updateProducts = function(req, res){
 	if(req.headers.appsecret==constants.appSecret){
 		dbCon.MongoClient.connect(dbCon.dbUrl, function (err, db) {
@@ -138,11 +148,21 @@ module.exports.updateProducts = function(req, res){
 						var products=db.collection("products");
 						var orders=db.collection("orders");
 						products.find({"_id":idsi}).toArray(function(err,product){
-							orders.find({"userNo":user[0]._id,"productNo":product[0]._id}).toArray(function(err,order){
+							orders.find({"userNo":JSON.stringify(user[0]._id),"productNo":product[0]._id}).toArray(function(err,order){
+								req.body.number=eval(req.body.number);
+								if(order.length==0){var startNumber=0;}else{var startNumber=order[0].number;}
+								if(req.body.doo=="increase"){
+									req.body.number=startNumber+req.body.number;
+								}else if(req.body.doo=="decrease"){
+									req.body.number=startNumber-req.body.number;
+								}else if(req.body.doo=="update"){
+									//nothing to do
+								}
+								
 								if(order.length==0){
 									if(req.body.number>0){
 										if(product[0].number>=req.body.number){
-											orders.insert({"userNo":user[0]._id,"productNo":product[0]._id,"price":(req.body.number*product[0].price),"number":req.body.number},function(err,result){
+											orders.insert({"userNo":JSON.stringify(user[0]._id),"productNo":product[0]._id,"price":(req.body.number*product[0].price),"number":req.body.number},function(err,result){
 												products.updateOne({"_id":idsi},{$set:{"number":(product[0].number-req.body.number)}},function(err,result){
 													res.write("{'result':true,'message':'Ürün sepete eklendi'}");
 													res.end();
@@ -153,13 +173,13 @@ module.exports.updateProducts = function(req, res){
 											res.end();
 										}
 									}else{
-										res.write("'result':false,'message':'Değişiklik yok'");
+										res.write("'result':false,'message':'Değişiklik yok 1'");
 										res.end();
 									}
 								}else{
 									if(req.body.number>order[0].number){
 										if(product[0].number>=order[0].number-req.body.number){
-											orders.updateOne({"userNo":user[0]._id,"productNo":product[0]._id},{$set:{"number":req.body.number}},function(err,result){
+											orders.updateOne({"userNo":JSON.stringify(user[0]._id),"productNo":product[0]._id},{$set:{"number":req.body.number}},function(err,result){
 												products.updateOne({"_id":idsi},{$set:{"number":(product[0].number-(req.body.number-order[0].number))}},function(err,result){
 													res.write("{'result':false,'message':'Ürünler sepete eklendi'}");
 													res.end();
@@ -184,7 +204,7 @@ module.exports.updateProducts = function(req, res){
 											});
 										}
 									}else{
-										res.write("{'result':false,'message':'Değişiklik yok'}");
+										res.write("{'result':false,'message':'Değişiklik yok 2'}");
 										res.end();
 									}
 								}
