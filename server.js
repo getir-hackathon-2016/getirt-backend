@@ -55,29 +55,32 @@ io.sockets.on("connection",function(socket){
 		console.log(socketIDS);
 	});
 	
+	/**
+	* kuryeden gelen meridyen bilgilerini hedeflenen üyeye
+	* üyenin socket bağlantısından göndermektedir. Bunun için
+	* üyenin configurasyon gerçekleştirmiş olması gerekmektedir
+	*/
 	socket.on("messenger position",function(data){
-		console.log("messenger new position");
 		var customerSocketId=socketIDS[data.userNo];
 		if(io.sockets.connected[customerSocketId] && customerSocketId!=undefined){
-			console.log("calisti");
 			io.sockets.connected[customerSocketId].emit("messenger position",{"x":data.x,"y":data.y});
 		}else{
-			console.log("konum iletilmek istenen uyenin socket idsi kayitli degil");
+			console.log("konum iletilmek istenen uyenin socket idsine erişilemedi");
 		}
 	});
 });
 
-// importing pratic methods
+// IMPORTING PRATIC METHODS
 var constants=require("./constants");
 var tools=require("./methods/tools.js");
 
-// importing route methods
+// IMPORTING ROUTE METHODS
 var userMethods=require("./methods/userMethods.js");
 var listingMethods=require("./methods/listingMethods.js");
 var orderMethods=require("./methods/orderMethods.js");
 var messengerMethods=require("./methods/messengerMethods.js");
 
-// routes
+// ROUTES
 app.post("/register", userMethods.register);
 app.post("/login",userMethods.login);
 		
